@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuthenticator } from "@aws-amplify/ui-react";
 import { generateClient } from "aws-amplify/data";
 import type { Schema } from "@/amplify/data/resource";
 import "./../app/app.css";
@@ -12,7 +13,8 @@ Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
 
-export default function App() {
+export default function App() {  
+  const { signOut } = useAuthenticator();
   const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
 
   function listTodos() {
@@ -29,6 +31,10 @@ export default function App() {
     client.models.Todo.create({
       content: window.prompt("Todo content"),
     });
+  }  
+
+  function deleteTodo(id: string) {
+    client.models.Todo.delete({ id })
   }
 
   return (
@@ -37,7 +43,12 @@ export default function App() {
       <button onClick={createTodo}>+ new</button>
       <ul>
         {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
+          <li
+            onClick={() => deleteTodo(todo.id)}
+            key={todo.id}
+          >
+            {todo.content}
+          </li>
         ))}
       </ul>
       <div>
@@ -46,7 +57,8 @@ export default function App() {
         <a href="https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/">
           Review next steps of this tutorial.
         </a>
-      </div>
+      </div>      
+      <button onClick={signOut}>Sign out</button>
     </main>
   );
 }
